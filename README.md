@@ -21,10 +21,13 @@ Note: in rapsbian versions <= bullseye, cmdline.txt is under /boot directory. In
     `sudo kubectl get nodes`
 
 The command should return a list of cluster nodes like:
-`NAME       STATUS   ROLES                  AGE   VERSION`
-`raspi5     Ready    control-plane,master   7d    v1.28.6+k3s2`
-`raspi3-2   Ready                           7d    v1.28.6+k3s2`
-`raspi3-1   Ready                           7d    v1.28.6+k3s2`
+
+```
+NAME       STATUS   ROLES                  AGE   VERSION`
+raspi5     Ready    control-plane,master   7d    v1.28.6+k3s2
+raspi3-2   Ready                           7d    v1.28.6+k3s2
+raspi3-1   Ready                           7d    v1.28.6+k3s2
+```
 
 Worker nodes are not tagged but you may do so using:
 `sudo kubectl label node <nodename> node-role.kubernetes.io/worker=worker`
