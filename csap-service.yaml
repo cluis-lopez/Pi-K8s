@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: csap-service
+spec:
+  selector:
+    app: csap
+  ports:
+  - name: http
+    protocol: TCP
+    port: 8080
+    targetPort: 8080
+  type: LoadBalancer
