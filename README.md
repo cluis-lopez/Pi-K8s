@@ -1,11 +1,12 @@
-# Raspberry Pi Kubernetes cluster to deploy Spring based apps
+# Raspberry Pi Kubernetes cluster
 
-This document and the companion scripts serve as a short guide to deploy a Kubernetes (K8s) cluster inside a bunch of Raspberry Pi acting as servers.
+This document and the companion scripts serve as a short guide to deploy a Kubernetes (K8s) cluster inside a bunch of Raspberry Pi acting as servers. **Rancher (K3s)** distribution of kubernetes is used as it's available for ARM architectures and fits well into memory scarved devices like Raspberries.
+The example below shows the deployment of a cluster to run multiple replicas of a Spring based webapp that consumes data from a MySQL database that runs on baremetal (out of the cluster) on the Raspberry Pi acting as master node of the K8s cluster as well but following the instructions you may adapt them to deploy any other workloads.
 
 The ingredients for the recipe are:
 
-- **3 x Raspberry Pi**: in my case they're two Raspberry Pi 3 with 4 cores, 1GB RAM and one Raspberry Pi 5 with 4 cores and 4GB RAM. The last is confgured as master node while the others are worker nodes. 1GB RAM is poor but you may run 4/5 Spring-Boot based containers on each as every Spring image container takes about 200MB to run
-- **1 x Standard x86 Laptop**: running Ubuntu in my case but I guess could be running Windows as long as you may install and run Docker on it
+- **3 x Raspberry Pi**: in my case they're two Raspberry Pi Model 3 with 4 cores, 1GB RAM and one Raspberry Pi model 5 with 4 cores and 4GB RAM. The last is confgured as master node while the others are worker nodes. 1GB RAM is poor but you may run 4/5 Spring-Boot based containers on each as every Spring image container takes about 200MB to run
+- **1 x Standard x86 Laptop**: running Ubuntu in my case but I guess could be running Windows (or WSL) as long as you may install and run Docker on it
 
 Optional
 
@@ -15,10 +16,10 @@ Optional
 
 ## Basic Installation
 
-- Install a fresh Raspbian 64 bit image on every node of your future cluster. To save memory, use the headless (lite) version of the operating system as you won't use GUI on the Raspis and will access them through ssh
+- Install a fresh 64 bit Raspbian image on every node of your future cluster. To save memory, use the headless (lite) version of the operating system as you won't use GUI on the Raspis and will access them through ssh
 - Asign static IP addresses to every node either using reserved IPs on your home DHCP server or manually configuring your /etc/dhcpcd.conf file
 - Activate the sshd service using `raspi-config`
-- Make all the raspis visible between them, using hostnames through /etc/hosts
+- Make all the raspis visible between them, using hostnames editing each /etc/hosts
 - Modify the cmdline.txt file including, at the end of the single line of the file, this entry: `cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory`
 _Note: in rapsbian versions <= bullseye, cmdline.txt is under /boot directory. In raspbian version >= bookworn file is under /boot/firmware_
 - Reboot all the nodes in your cluster
@@ -46,13 +47,18 @@ raspi3-1   Ready                           7d    v1.28.6+k3s2
 Worker nodes are not tagged but you may do so using:
 `sudo kubectl label node <nodename> node-role.kubernetes.io/worker=worker`
 
-## Optional: Manage your cluster from your x86 Linux laptop
+### Ansible Installation
+For those using Ansible, under Ansible directory in the repo, there's a copy of the scrips I use to initialize the cluster. K3s deployment is yet under works, by the way.
+Edit the yaml playbooks to reflect your own environment (hostnames, IPs...)
 
-1- Install kubectl on you linux laptop through 
-2- On your raspberry kubernetes master node copy the contents of file `/etc/rancher/k3s/k3s.yaml`
-3- On your local PC create a directory `.kube` under you user's home directory
-4- Create a file `config` under `.kube/config` and move the contents of the k3s.yaml file from the kubernetes master node
-5- Edit that file and modify the entry
+## Optional: Manage your cluster from your x86 Linux laptop
+To avoid stay connected to one of your Raspis (tipically your master node) to administer/monitor you cluster, is convenient to use your laptop as a cluster controller which only requires to install & configure `kubectl` on it
+
+- Install kubectl on you linux laptop following the official documentation (https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/)
+- On your raspberry kubernetes master node copy the contents of file `/etc/rancher/k3s/k3s.yaml`
+- On your local PC create a directory `.kube` under you user's home directory
+- Create a file `config` under `.kube/config` and move the contents of the k3s.yaml file from the kubernetes master node
+- Edit that file and modify the entry
     `server: https://127.0.0.1:6443`
 
 to reflect the hostname/ip of your master node like:
@@ -69,8 +75,8 @@ The easiest way to create a local repository is running it inside a Docker conta
 
 Assuming your x86 PC has Docker installed already, this example shows how to build an ARM valid image for your Spring application
 
-1- You Dockerfile should use a base image that is available from docker.io compiled for ARM. If your image is java based `FROM openjdk:17.0.1` in your Dockerfile (use the version number you like) is good enough
-2- Copy your `target/*.jar` file into the image, expose the needed port and create the container entry point. Your Dockerfile should be as follows:
+- You Dockerfile should use a base image that is available from docker.io compiled for ARM. If your image is java based `FROM openjdk:17.0.1` in your Dockerfile (use the version number you like) is good enough
+- Copy your `target/*.jar` file into the image, expose the needed port and create the container entry point. Your Dockerfile should be as follows:
 
     ```
     FROM openjdk:17.0.1
@@ -80,22 +86,22 @@ Assuming your x86 PC has Docker installed already, this example shows how to bui
     ENTRYPOINT ["java","-jar","/app.jar"]
     ```
 
-3- Assuming you've created the Dockerfile in the root directory of your maven project execute: `docker buildx build --platform linux/arm64 --load .`
+- Assuming you've created the Dockerfile in the root directory of your maven project execute: `docker buildx build --platform linux/arm64 --load .`
 
-4- A nontagged image should have been created locally:
+- A nontagged image should have been created locally:
 `# docker image ls`
 `<none>                  <none>            83034bdb323d   16 hours ago   547MB`
 
-5- Tagg your newly created image using your repository in the tag name using:
+- Tagg your newly created image using your repository in the tag name using:
 `docker image tag <your repo hostname/ip>:<your repo port>/<tagname>:<version>`
 
 example with the above image using a local repository: 
     `docker image tag 192.168.1.111:5000/clopez/csap-arm:latest 8303`
 
-6- Pull the tagged image on the repository using: 
+- Pull the tagged image on the repository using: 
 `docker pull <your repo hostname/ip>:<your repo port>/<tagname>:<version>`
 
-7- Check your repo contains the just uploaded image using:
+- Check your repo contains the just uploaded image using:
 `curl -X GET <your repo hostname/ip>:<your repo port>/v2/_xcatalog`
 
 You reppository should answer with a json object like: 
