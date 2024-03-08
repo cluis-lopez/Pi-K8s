@@ -4,33 +4,34 @@ This document and the companion scripts serve as a short guide to deploy a Kuber
 
 The ingredients for the recipe are:
 
-- 3 x Raspberry Pi: in my case they're two Raspberry Pi 3 with 4 cores, 1GB RAM and one Raspberry Pi 5 with 4 cores and 4GB RAM. The last is confgured as master node while the others are worker nodes. 1GB RAM is poor but you may run 4/5 Spring-Boot based containers on each as every Spring image container takes about 200MB to run
-- 1 x Standard x86 Laptop: running Ubuntu in my case but I guess could be running Windows as long as you may install and run Docker on it
+- **3 x Raspberry Pi**: in my case they're two Raspberry Pi 3 with 4 cores, 1GB RAM and one Raspberry Pi 5 with 4 cores and 4GB RAM. The last is confgured as master node while the others are worker nodes. 1GB RAM is poor but you may run 4/5 Spring-Boot based containers on each as every Spring image container takes about 200MB to run
+- **1 x Standard x86 Laptop**: running Ubuntu in my case but I guess could be running Windows as long as you may install and run Docker on it
 
 Optional
 
-- 1 x GeeekPi Raspberry Pi Cluster mini-rack (https://www.amazon.es/dp/B07MW24S61?psc=1&ref=ppx_yo2ov_dt_b_product_details) altough designed for Raspberry Pis 3 & 4 my Raspi5 fits perfectly in the top of the rack. The minirack comes with minifans for each Raspi slot. In my case I'm using the official fan for the model 5 so cannot use (there's no enough space) the mini fan of the rack.
-- 1 x Power Supply: to avoid using individual charges for each Raspberry I'm using this MANTO 100W Power supply with 4 USB ports (https://www.amazon.es/dp/B0BRKWCBWG?psc=1&ref=ppx_yo2ov_dt_b_product_details). 100W is more than enough for the three Raspis. Each single USB-C port may supply at to 30W which supports even power peaks of the Raspi-5.
-- 1 x TP-Link LS105G 5 port 1Gb switch (https://www.amazon.es/gp/product/B07RPVQY62/ref=ppx_yo_dt_b_asin_title_o00_s01?ie=UTF8&psc=1) to wire each Raspi and avoid using Wifi
+- **1 x GeeekPi Raspberry Pi Cluster** mini-rack (https://www.amazon.es/dp/B07MW24S61?psc=1&ref=ppx_yo2ov_dt_b_product_details) altough designed for Raspberry Pis 3 & 4 my Raspi5 fits perfectly in the top of the rack. The minirack comes with minifans for each Raspi slot. In my case I'm using the official fan for the model 5 so cannot use (there's no enough space) the mini fan of the rack.
+- **1 x Power Supply**: to avoid using individual chargers for each Raspberry I'm using this MANTO 100W Power supply with 4 USB ports (https://www.amazon.es/dp/B0BRKWCBWG?psc=1&ref=ppx_yo2ov_dt_b_product_details). 100W is more than enough for the three Raspis. Each single USB-C port may supply at to 30W which supports even power peaks of the Raspi-5.
+- **1 x TP-Link LS105G 5 port 1Gb switch** (https://www.amazon.es/gp/product/B07RPVQY62/ref=ppx_yo_dt_b_asin_title_o00_s01?ie=UTF8&psc=1) to wire each Raspi and avoid using Wifi
 
 ## Basic Installation
 
-1- Install a fresh Raspbian 64 bit image on every node of your future cluster
-2- Asign static IP addresses to every node either using reserved IPs on your home DHCP server or manually configuring your /etc/dhcpcd.conf file
-3- Make all the raspis are visible between them, using hostnames through /etc/hosts
-4- Modify the cmdline.txt file including, at the end of the single line of the file, this entry: "cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory"
-Note: in rapsbian versions <= bullseye, cmdline.txt is under /boot directory. In raspbian version >= bookworn file is under /boot/firmware
-5- Reboot all the nodes in your cluster
-6- Chose one of your raspis as master (control plane) of the kubernetes cluster and install K3s on it using: 
+- Install a fresh Raspbian 64 bit image on every node of your future cluster. To save memory, use the headless (lite) version of the operating system as you won't use GUI on the Raspis and will access them through ssh
+- Asign static IP addresses to every node either using reserved IPs on your home DHCP server or manually configuring your /etc/dhcpcd.conf file
+- Activate the sshd service using `raspi-config`
+- Make all the raspis visible between them, using hostnames through /etc/hosts
+- Modify the cmdline.txt file including, at the end of the single line of the file, this entry: `cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory`
+_Note: in rapsbian versions <= bullseye, cmdline.txt is under /boot directory. In raspbian version >= bookworn file is under /boot/firmware_
+- Reboot all the nodes in your cluster
+- Chose one of your raspis as master (control plane) of the kubernetes cluster and install K3s on it using: 
     `curl -sfL http://get.k3s.io | sh -`
 
-7- Get the key from the master node and record it somewhere:
+- Get the key from the master node and record it somewhere:
     `sudo cat /var/lib/rancher/k3s/server/token`
 
-8- Install the worker nodes using the following command on every node
+- Install the worker nodes using the following command on every node
     `curl -sFL http://get.k3s.io | K3S_URL=http://<your_master_node_hostanme_or_ip>:6443 K3S_TOKEN=<your_previously_grabbed_cluster_token> sh -`
 
-9- Check the installation using
+- Check the installation using
     `sudo kubectl get nodes`
 
 The command should return a list of cluster nodes like:
