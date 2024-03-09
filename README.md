@@ -50,10 +50,10 @@ raspi3-1   Ready                           7d    v1.28.6+k3s2
 Worker nodes are not tagged by default but you may do so using:
 `sudo kubectl label node <nodename> node-role.kubernetes.io/worker=worker`
 
-### Ansible Installation
+### Configuring with Ansible
 For those using Ansible, under Ansible directory in the repo, there's a copy of the scripts I use to initialize the cluster. K3s deployment is yet under works, by the way.
 
-Edit the yaml playbooks to reflect your own environment (hostnames, IPs...)
+Edit the invetory.ini file and the yaml playbooks to reflect your own environment (hostnames, IPs...)
 
 ## Optional: Manage your cluster from your laptop
 To avoid open ssh connections to one of your Raspis (tipically your master node) to administer/monitor you cluster, is convenient to use your laptop as a cluster controller which only requires to install & configure `kubectl` on it
@@ -77,11 +77,20 @@ The easiest way to create a local repository is running inside a Docker containe
 
 `docker run -d -p 5000:5000 --name local.registry registry:latest`
 
+By default, your K3s nodes will try _https_ to pull images but they'll fail as yous local repository, without a complex configuration including the installation of certificates, will work with _http_ only.
+
+To solve the above, on every node of your cluster, including the master-node, create or edit the file `/var/....`and include the folowwing lines:
+
+```
+deewd
+dwedewd
+```
+
 ## Create an Spring container image in a x86 PC/Server that may run in ARM platforms
 
 Assuming your x86 PC has Docker installed already, this example shows how to build an ARM valid image for your Spring application
 
-- You Dockerfile should use a base image, available from docker.io and compiled for ARM. If your image is java based `FROM openjdk:17.0.1` is good enough. In your Dockerfile, use the version number you like or need.
+- You Dockerfile should use a base image, available from _docker.io_ and compiled for ARM. If your image is java based `FROM openjdk:17.0.1` is good enough. In your Dockerfile, use the version number you like or need.
 - Copy your `target/*.jar` file into the image, expose the needed port and create the container entry point. Your Dockerfile should be as follows:
 
     ```
@@ -124,4 +133,4 @@ You reppository should answer with a json object like:
 
 ## Troubleshoot containers in the Raspberrys
 
-In modern K8s distros, like Rancher/K3s, container engine has moved from **Docker** to **containerd**
+In modern Kubernetes distros, like Rancher/K3s, container engine has moved from **Docker** to **containerd** so troubleshooting of containers require the use of this engine's commands along the logging facilities provided by `kubectl`
