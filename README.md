@@ -71,9 +71,9 @@ to reflect the hostname/ip of your master node like:
 
 ## Optional: create a local repository for container images
 
-By default, your deployments will search container images in the standard repositories (docker.io and the likes). If you have an account of those or you may create a cloud based repository in Azure or GCP you may skip this step but if you prefee to avoid the burden of the authorization mechanisms of cloud based repos you should use a private, local one.
+By default, your deployments will search container images in the standard repositories (_docker.io_ and the likes). If you have an account on those or you may create a cloud based repository in Azure or GCP you may skip this step but if you prefer to avoid the burden of the authorization mechanisms of cloud based repos you should use a private, local one.
 
-The easiest way to create a local repository is running it inside a Docker container running:
+The easiest way to create a local repository is running inside a Docker container executing:
 
 `docker run -d -p 5000:5000 --name local.registry registry:latest`
 
@@ -81,7 +81,7 @@ The easiest way to create a local repository is running it inside a Docker conta
 
 Assuming your x86 PC has Docker installed already, this example shows how to build an ARM valid image for your Spring application
 
-- You Dockerfile should use a base image that is available from docker.io compiled for ARM. If your image is java based `FROM openjdk:17.0.1` in your Dockerfile (use the version number you like) is good enough
+- You Dockerfile should use a base image, available from docker.io and compiled for ARM. If your image is java based `FROM openjdk:17.0.1` is good enough. In your Dockerfile, use the version number you like or need.
 - Copy your `target/*.jar` file into the image, expose the needed port and create the container entry point. Your Dockerfile should be as follows:
 
     ```
@@ -100,21 +100,28 @@ Assuming your x86 PC has Docker installed already, this example shows how to bui
 `<none>                  <none>            83034bdb323d   16 hours ago   547MB
 ```
 
-- Tagg your newly created image using your repository in the tag name using:
+- Tagg your newly created image using your repository in the tag name:
+
 `docker image tag <your repo hostname/ip>:<your repo port>/<tagname>:<version>`
 
-example with the above image using a local repository: 
+example with the above image using a local repository:
+
     `docker image tag 192.168.1.111:5000/clopez/csap-arm:latest 8303`
 
-- Pull the tagged image on the repository using: 
+- Pull the tagged image on the repository using:
+
 `docker pull <your repo hostname/ip>:<your repo port>/<tagname>:<version>`
 
 - Check your repo contains the just uploaded image using:
+
 `curl -X GET <your repo hostname/ip>:<your repo port>/v2/_catalog`
 
-You reppository should answer with a json object like: 
+You reppository should answer with a json object like:
+
 `{"repositories":["clopez/csap","clopez/csap-arm"]}`
 
 ## Deploy you kubernets deployment and create a service
 
 ## Troubleshoot containers in the Raspberrys
+
+In modern K8s distros, like Rancher/K3s, container engine has moved from **Docker** to **containerd**
