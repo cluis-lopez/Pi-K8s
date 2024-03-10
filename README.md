@@ -65,7 +65,7 @@ For those using Ansible, under Ansible directory in the repo, there's a copy of 
 
 Edit the invetory.ini file and the yaml playbooks to reflect your own environment (hostnames, IPs...)
 
-## Optional: Manage your cluster from your laptop
+## Optional: Manage the cluster from your laptop
 To avoid open ssh connections to one of your Raspis (tipically your master node) to administer/monitor you cluster, is convenient to use your laptop as a cluster controller which only requires to install & configure `kubectl` on it
 
 - Install kubectl on you linux laptop following the official documentation (https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/)
@@ -144,6 +144,13 @@ You reppository should answer with a json object like:
 `{"repositories":["clopez/csap","clopez/csap-arm"]}`
 
 ## Deploy you kubernets deployment and create a service
+
+To deploy your app, use the provided `csap.yml`file as a template. Some critical fields you may edit/change are:
+
+- **replicas** the number of pods you want to run
+- **image** the fully qualified name of the image, including the registry name/ip and port and the version of the image
+- **nodeSelector** you may restrict the nodes where the pod(s) are executed using this field with a previously tagged pair of key/value you may apply to your nodes. In my case I've tagged worker nodes with: `kubectl label nodes <worker_nodename> system_model=raspberry3`. This way, my pods are launched in worker ndoes only when **nodeSelector** field filters this key/value pair.
+- **hostAliases** if your pods need to access an external resource you need to provide their hostname/IP using this field. In my case, pods run a Spring based webapp using an external MySQL repository. The datasource string used is _jdbc:mysql://raspi5:3306/CBS_ so we need to provide the IP address of _raspi5_ inside the container.
 
 ## Troubleshoot containers in the Raspberrys
 
