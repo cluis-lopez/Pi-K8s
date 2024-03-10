@@ -1,0 +1,45 @@
+  - name: Deploy K3s cluster
+    hosts: raspis
+    become: yes
+    become_user: root
+    tasks:
+      - name: Update catalogs
+        apt:
+          force_apt_get: yes
+          upgrade: dist
+        become: yes
+      - name: Activate cgroups in bookworm
+        replace:
+          path: /boot/firmware/cmdline.txt
+          regexp: '^([\w](?!.*\b{{ item }}\b).*)$'
+          replace: '\1 {{ item }}'
+        with_items:
+          - "cgroup_enable=cpuset"
+          - "cgroup_memory=1"
+          - "cgroup_enable=memory"
+        become: yes
+        tags:
+          - cmdline in bookworm
+        when: "ansible_distribution_major_version|string == '12'"
+      - name: Activate cgroups in bullseye
+        replace:
+          path: /boot/cmdline.txt
+          regexp: '^([\w](?!.*\b{{ item }}\b).*)$'
+          replace: '\1 {{ item }}'
+        with_items:
+          - "cgroup_enable=cpuset"
+          - "cgroup_memory=1"
+          - "cgroup_enable=memory"
+        become: yes
+        tags:
+          - cmdline in bullseye
+        when: "ansible_distribution_major_version|string == '11'"
+      - name: Reboot raspis after modifying /boot/cmdline
+        reboot:
+        register: elapsed
+        tags: cmdline
+      - debug:
+          msg: "{{inventory_hostname}} Rebooted. Status: {{ elapsed }}"
+        tags: cmdlline
+
+

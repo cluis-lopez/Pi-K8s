@@ -1,0 +1,39 @@
+  - name: Initialize Raspis
+    hosts: raspis
+    become: yes
+    become_user: root
+    tasks:
+      - name: Update catalogs
+        apt:
+          force_apt_get: yes
+          upgrade: dist
+        become: yes
+      - name: Install Java 17
+        apt:
+          name: openjdk-17-jdk
+          state: present
+      - name: Update /etc/hosts
+        blockinfile:
+          path: /etc/hosts
+          block: |
+            {{ item.ip }} {{ item.name }}
+          marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.name }}"
+        loop:
+          - { name: raspi5, ip: 192.168.1.111 }
+          - { name: raspi3-1, ip: 192.168.1.112 }
+          - { name: raspi3-2, ip: 192.168.1.113 }
+        tags:
+          - hosts
+      - name: Aliases on .bashrc
+        blockinfile:
+          path: /home/pi/.bashrc
+          block: |
+            alias ll='ls -alF'
+            alias la='ls -A'
+            alias l='ls -CF'
+            alias more=less
+          marker: "# {mark} ANSIBLE MANAGED BLOCK"
+        tags:
+          - bashrc
+
+
