@@ -79,12 +79,16 @@ The easiest way to create a local repository is running inside a Docker containe
 
 By default, your K3s nodes will try _https_ to pull images but they'll fail as yous local repository, without a complex configuration including the installation of certificates, will work with _http_ only.
 
-To solve the above, on every node of your cluster, including the master-node, create or edit the file `/var/....`and include the folowwing lines:
+To solve the above, on every node of your cluster, including the master-node, create or edit the file `/etc/rancher/k3s/registries.yaml`and include the followwing lines:
 
 ```
-deewd
-dwedewd
+mirrors:
+  "192.168.1.109:5000":
+    endpoint:
+      - "http://192.168.1.109:5000"
+
 ```
+Replace `192.168.1.109`for the IP of your laptop, or the computer where your local registry is running.
 
 ## Create an Spring container image in a x86 PC/Server that may run in ARM platforms
 
