@@ -4,7 +4,9 @@ This document and the companion scripts serve as a short guide to deploy a Kuber
 
 **Rancher (K3s)** distribution of kubernetes is used as it's available for ARM architectures and fits well into memory scarved devices like Raspberries.
 
-The example below shows the deployment of a cluster to run multiple replicas of a Spring Boot based webapp that consumes data from a MySQL database that runs on baremetal (out of the cluster) on the Raspberry Pi acting as master node of the K8s cluster as well but following the instructions you may adapt them to deploy any other workloads.
+The example below shows the deployment of a cluster to run multiple replicas of a Spring Boot based webapp that consumes data from an external MySQL database that runs on baremetal (out of the cluster) on the same Raspberry Pi acting as master node of the K8s cluster.
+
+Following the instructions you may adapt them to deploy any other workloads.
 
 The ingredients for the recipe are:
 
@@ -13,17 +15,25 @@ The ingredients for the recipe are:
 
 Optional
 
-- **1 x GeeekPi Raspberry Pi Cluster** mini-rack (https://www.amazon.es/dp/B07MW24S61?psc=1&ref=ppx_yo2ov_dt_b_product_details) altough designed for Raspberry Pis 3 & 4 my Raspi5 fits perfectly in the top of the rack. The minirack comes with minifans for each Raspi slot. In my case I'm using the official fan for the model 5 so cannot use (there's no enough space) the mini fan of the rack.
-- **1 x Power Supply**: to avoid using individual chargers for each Raspberry I'm using this MANTO 100W Power supply with 4 USB ports (https://www.amazon.es/dp/B0BRKWCBWG?psc=1&ref=ppx_yo2ov_dt_b_product_details). 100W is more than enough for the three Raspis. Each single USB-C port may supply at to 30W which supports even power peaks of the Raspi-5.
+- **1 x GeeekPi Raspberry Pi Cluster mini-rack** (https://www.amazon.es/dp/B07MW24S61?psc=1&ref=ppx_yo2ov_dt_b_product_details) altough designed for Raspberry Pis 3 & 4 my Raspi5 fits perfectly in the top of the rack. The minirack comes with minifans for each Raspi slot. In my case I'm using the official fan for the model 5 so cannot use (there's no enough space) the mini fan of the rack.
+- **1 x Power Supply**: to avoid using individual chargers for each Raspberry I'm using this MANTO 100W Power supply with 4 USB ports (https://www.amazon.es/dp/B0BRKWCBWG?psc=1&ref=ppx_yo2ov_dt_b_product_details). 100W is more than enough for the three Raspis. Each single USB-C port may supply up to 30W which supports even power peaks of the Raspi-5.
 - **1 x TP-Link LS105G 5 port 1Gb switch** (https://www.amazon.es/gp/product/B07RPVQY62/ref=ppx_yo_dt_b_asin_title_o00_s01?ie=UTF8&psc=1) to wire each Raspi and avoid using Wifi
 
 ## Basic Installation
 
 - Install a fresh 64 bit Raspbian image on every node of your future cluster. To save memory, use the headless (lite) version of the operating system as you won't use GUI on the Raspis and will access them through ssh
-- Asign static IP addresses to every node either using reserved IPs on your home DHCP server or manually configuring your /etc/dhcpcd.conf file
+- Asign static IP addresses to every node either reserving IPs on your home DHCP server or manually configuring your /etc/dhcpcd.conf file
 - Activate the sshd service using `raspi-config`
-- Make all the raspis visible between them, using hostnames editing each /etc/hosts
-- Modify the cmdline.txt file including, at the end of the single line of the file, this entry: `cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory`
+- Make all the raspis visible between them, using hostnames editing each /etc/hosts. In my home lab, `/etc/hosts` is like:
+
+```
+192.168.1.111 raspi5
+192.168.1.112 raspi3-1
+192.168.1.113 raspi3-2
+```
+
+- Modify the cmdline.txt file including, at the end of the single line of the file, this entry: `cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory
+
 _Note: in rapsbian versions <= bullseye, cmdline.txt is under /boot directory. In raspbian version >= bookworn file is under /boot/firmware_
 - Reboot all the nodes in your cluster
 - Chose one of your raspis as master (control plane) of the kubernetes cluster and install K3s on it using: 
@@ -115,11 +125,11 @@ Assuming your x86 PC has Docker installed already, this example shows how to bui
 
 - Tagg your newly created image using your repository in the tag name:
 
-`docker image tag <your repo hostname/ip>:<your repo port>/<tagname>:<version>`
+`docker image tag <your repo hostname/ip>:<your repo port>/<tagname>:<version> <tagid>`
 
 example with the above image using a local repository:
 
-    `docker image tag 192.168.1.111:5000/clopez/csap-arm:latest 8303`
+`docker image tag 192.168.1.111:5000/clopez/csap-arm:latest 8303`
 
 - Pull the tagged image on the repository using:
 
