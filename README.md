@@ -35,6 +35,7 @@ Optional
 - Modify the cmdline.txt file including, at the end of the single line of the file, this entry: `cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory
 
 _Note: in rapsbian versions <= bullseye, cmdline.txt is under /boot directory. In raspbian version >= bookworn file is under /boot/firmware_
+
 - Reboot all the nodes in your cluster
 - Chose one of your raspis as master (control plane) of the kubernetes cluster and install K3s on it using: 
     `curl -sfL http://get.k3s.io | sh -`
@@ -83,7 +84,7 @@ to reflect the hostname/ip of your master node like:
 
 By default, your deployments will search container images in the standard repositories (_docker.io_ and the likes). If you have an account on those or you may create a cloud based repository in Azure or GCP you may skip this step but if you prefer to avoid the burden of the authorization mechanisms of cloud based repos you should use a private, local one.
 
-The easiest way to create a local repository is running inside a Docker container executing:
+The easiest way to create a local repository is running it inside a Docker container executing:
 
 `docker run -d -p 5000:5000 --name local.registry registry:latest`
 
@@ -150,7 +151,7 @@ To deploy your app, use the provided `csap.yml`file as a template. Some critical
 - **replicas** the number of pods you want to run
 - **image** the fully qualified name of the image, including the registry name/ip and port and the version of the image
 - **nodeSelector** you may restrict the nodes where the pod(s) are executed using this field with a previously tagged pair of key/value you may apply to your nodes. In my case I've tagged worker nodes with: `kubectl label nodes <worker_nodename> system_model=raspberry3`. This way, my pods are launched in worker ndoes only when **nodeSelector** field filters this key/value pair.
-- **hostAliases** if your pods need to access an external resource you need to provide their hostname/IP using this field. In my case, pods run a Spring based webapp using an external MySQL repository. The datasource string used is _jdbc:mysql://raspi5:3306/CBS_ so we need to provide the IP address of _raspi5_ inside the container.
+- **hostAliases** if your pods need to access an external resource you need to provide their hostname/IP using this field. In my case, pods run a Spring based webapp using an external MySQL repository. The datasource string used is _jdbc:mysql://raspi5:3306/CBS_ therefore, we need to provide the IP address of _raspi5_ inside the container.
 
 ## Troubleshoot containers in the Raspberrys
 
