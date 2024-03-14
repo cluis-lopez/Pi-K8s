@@ -77,7 +77,6 @@ To avoid open ssh connections to one of your Raspis (tipically your master node)
     `server: https://127.0.0.1:6443`
 
 to reflect the hostname/ip of your master node like:
-
     `server: https://master-raspi:6443`
 
 ## Optional: create a local repository for container images
@@ -153,6 +152,10 @@ To deploy your app, use the provided `csap.yml`file as a template. Some critical
 - **nodeSelector** you may restrict the nodes where the pod(s) are executed using this field with a previously tagged pair of key/value you may apply to your nodes. In my case I've tagged worker nodes with: `kubectl label nodes <worker_nodename> system_model=raspberry3`. This way, my pods are launched in worker ndoes only when **nodeSelector** field filters this key/value pair.
 - **hostAliases** if your pods need to access an external resource you need to provide their hostname/IP using this field. In my case, pods run a Spring based webapp using an external MySQL repository. The datasource string used is _jdbc:mysql://raspi5:3306/CBS_ therefore, we need to provide the IP address of _raspi5_ inside the container.
 
-## Troubleshoot containers in the Raspberrys
+## Troubleshoot containers inside the Raspberrys
 
-In modern Kubernetes distros, like Rancher/K3s, container engine has moved from **Docker** to **containerd** so troubleshooting of containers require the use of this engine's commands along the logging facilities provided by `kubectl`
+In modern Kubernetes distros, like Rancher/K3s, container engine has moved from **Docker** to **containerd** so troubleshooting of containers require the use of this engine's commands along the logging facilities provided by `kubectl`.
+
+Other than using standard logging facilities (i.e. `kubectl log`) sometimes is useful to manually execute containers to directly observe the errors.
+
+In order to do that, open a `ssh` session into one of your Raspberries and use (always with `sudo`) the `ctr` command, that accepts similar options to thos of `docker` (i.e. `sudo ctr run <image name>`, `sudo ctr images ls`, etc)
