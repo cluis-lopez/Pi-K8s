@@ -81,7 +81,7 @@ if (__name__ == '__main__'):
         exit()
     else:
         try:
-            delay = int(sys.argv[1])
+            delay = float(sys.argv[1])
         except ValueError as err:
             print(err)
             usage()
