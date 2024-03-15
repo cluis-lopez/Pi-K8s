@@ -34,6 +34,7 @@ def regenerateOrders(custId, remove, insert):
     
 def singleTransaction():
     message=""
+    elapsedTime=0.0
     try:
         starttime=time.time()
         customer = getRandomCustomer()
@@ -44,29 +45,46 @@ def singleTransaction():
             remove = 0
         insert = random.randrange(MAXINSERTS)
         newOrders = regenerateOrders(customer['id'], remove, insert)
+        elapsedTime=time.time()-starttime
         message = "Cliente " + customer['nombre'] + " " + customer['apellido']
         message = message + ", tenia " + str(len(currentOrders)) + " pedidos"
         message = message + ". Se han borrado " + str(remove) +" e insertado " + str(insert) +" pedidos"
         message = message + ". Nuevos pedidos: " + str(len(newOrders))
-        message = message + "\nElapsed Time: " + "{:.2f}".format(time.time()-starttime) + " sg"
+        message = message + "\nElapsed Time: " + "{:.2f}".format(elapsedTime) + " sg"
     except Exception as err:
         message = "Se ha producido un error: " + str(err)
 
-    return message
+    return (message, elapsedTime)
+
+def mainLoop(delay):
+    count = parcialCount = 0
+    average = 0.0
+    while True:
+        d = delay+(random.uniform(-delay/2,delay/2))
+        time.sleep(d)
+        ret = singleTransaction()
+        count += 1
+        parcialCount += 1
+        average=average+ret[1]/parcialCount
+        if (count % 5 == 0):
+            print("Realizadas " + str(count) + " transacciones. Tiempo medio para cada transaccion: " + "{:.2f}".format(average))
+            parcialCount = 0
+            average = 0.0
 
 def usage():
     print("Usage stress delay_value")
 
 if (__name__ == '__main__'):
     if (len(sys.argv) < 2):
-        print(singleTransaction())
+        ret = singleTransaction()
+        print(ret[0])
         exit()
     else:
         try:
-            delay = int(sys.arv[1])
+            delay = int(sys.argv[1])
         except ValueError as err:
             print(err)
             usage()
             exit()
-
+        mainLoop(delay)
 
