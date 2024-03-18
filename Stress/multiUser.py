@@ -23,6 +23,7 @@ if (__name__ == '__main__'):
         usage()
     if (numUsers<1 or numUsers>MAXUSERS):
         usage()
+    
     for i in range(numUsers):
         print("Lanzando el proceso " + str(i))
         p = Process(target=stress.mainLoop, args=(delay, ))

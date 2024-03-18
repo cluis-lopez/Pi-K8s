@@ -56,7 +56,7 @@ def singleTransaction():
 
     return (message, elapsedTime)
 
-def mainLoop(delay):
+def mainLoop(delay, multi=False):
     count = parcialCount = 0
     average = 0.0
     while True:
@@ -66,7 +66,7 @@ def mainLoop(delay):
         count += 1
         parcialCount += 1
         average=average+ret[1]/parcialCount
-        if (count % 5 == 0):
+        if (count % 5 == 0 and not multi):
             print("Realizadas " + str(count) + " transacciones. Tiempo medio para cada transaccion: " + "{:.2f}".format(average))
             parcialCount = 0
             average = 0.0

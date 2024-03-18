@@ -159,3 +159,11 @@ In modern Kubernetes distros, like Rancher/K3s, container engine has moved from 
 Other than using standard logging facilities (i.e. `kubectl log`) sometimes is useful to manually execute containers to directly observe the errors.
 
 In order to do that, open a `ssh` session into one of your Raspberries and use (always with `sudo`) the `ctr` command, that accepts similar options to thos of `docker` (i.e. `sudo ctr run <image name>`, `sudo ctr images ls`, etc)
+
+## Optional: create a NFS-based storage provider for you cluster
+
+Follow the detailed instructions provided by [LinuxTechi] (https://www.linuxtechi.com/dynamic-nfs-provisioning-kubernetes/). I've included the helm commans and yaml configuration needed under `nfs_storage` folder in the repository
+
+## Optional: deploy a Prometehus/Grafana monitoring environment
+
+I've follow the original instructions of [rpi4cluster](https://rpi4cluster.com/monitoring/monitor-intro/) with minimal cutomization to reflect nodenames of my cluster and the different storage provider. Yaml scripts are available in the repo under `monitoring`folder
