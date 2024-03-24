@@ -133,7 +133,7 @@ example with the above image using a local repository:
 
 - Pull the tagged image on the repository using:
 
-`docker pull <your repo hostname/ip>:<your repo port>/<tagname>:<version>`
+`docker push <your repo hostname/ip>:<your repo port>/<tagname>:<version>`
 
 - Check your repo contains the just uploaded image using:
 
