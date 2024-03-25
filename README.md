@@ -152,6 +152,14 @@ To deploy your app, use the provided `csap.yml`file as a template. Some critical
 - **nodeSelector** you may restrict the nodes where the pod(s) are executed using this field with a previously tagged pair of key/value you may apply to your nodes. In my case I've tagged worker nodes with: `kubectl label nodes <worker_nodename> system_model=raspberry3`. This way, my pods are launched in worker ndoes only when **nodeSelector** field filters this key/value pair.
 - **hostAliases** if your pods need to access an external resource you need to provide their hostname/IP using this field. In my case, pods run a Spring based webapp using an external MySQL repository. The datasource string used is _jdbc:mysql://raspi5:3306/CBS_ therefore, we need to provide the IP address of _raspi5_ inside the container.
 
+After your customizations, deploy your pod using:
+
+`kubectl apply -f csap.yaml` or the YAML filename you've used
+
+Customize the attached service to reach your the through your intranet running:
+
+`kubectl apply -f csap-service.yaml`
+
 ## Troubleshoot containers inside the Raspberrys
 
 In modern Kubernetes distros, like Rancher/K3s, container engine has moved from **Docker** to **containerd** so troubleshooting of containers require the use of this engine's commands along the logging facilities provided by `kubectl`.
